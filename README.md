@@ -1,1 +1,1 @@
-My Jadu text editor !!!
+My Jadu text editor!!!
