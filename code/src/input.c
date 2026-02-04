@@ -136,6 +136,11 @@ void editorMoveCursor(int key) {
 	int rowlen = row ? row->size : 0;
 	if (E.cx > rowlen)
 		E.cx = rowlen;
+
+    if (E.mode == MODE_VISUAL) {
+        E.sel_ex = E.cx;
+        E.sel_ey = E.cy;
+    }
 }
 
 /*** key processing ***/
@@ -171,6 +176,22 @@ void editorProcessKeypress(void) {
 		case CTRL_KEY('f'):
 			editorFind();
 			break;
+
+        case CTRL_KEY('v'):
+            if (E.mode == MODE_NORMAL) {
+                E.mode = MODE_VISUAL;
+                E.sel_sx = E.cx;
+                E.sel_sy = E.cy;
+                E.sel_ex = E.cx;
+                E.sel_ey = E.cy;
+            }
+            break;
+
+        case ('\x1b' || CTRL_KEY('c')):
+            if (E.mode == MODE_VISUAL) {
+                E.mode = MODE_NORMAL;
+            }
+            break;
 
 		case HOME_KEY:
 			E.cx = 0;

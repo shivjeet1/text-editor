@@ -10,6 +10,23 @@
 #include "../headers/row.h"
 #include "../headers/syntax.h"
 
+static void editorGetSelectionBounds(
+    int *sx, int *sy,
+    int *ex, int *ey 
+) {
+    if (E.sel_sy < E.sel_ey || (E.sel_sy == E.sel_ey && E.sel_sx <= E.sel_ex)) {
+        *sy = E.sel_sy;
+        *sx = E.sel_sx;
+        *ey = E.sel_ey;
+        *ex = E.sel_ex;
+    } else {
+        *sy = E.sel_ey;
+        *sx = E.sel_ex;
+        *ey = E.sel_sy;
+        *ex = E.sel_sx;
+    }
+}
+
 struct abuf {
 	char *b;
 	int len;
@@ -78,9 +95,35 @@ static void editorDrawRows(struct abuf *ab) {
 			char *c = &E.row[filerow].render[E.coloff];
 			unsigned char *hl = &E.row[filerow].hl[E.coloff];
 			int current_color = -1;
+            int sel_sx, sel_sy, sel_ex, sel_ey;
+            int visual_active = (E.mode == MODE_VISUAL);
+
+            if (visual_active) {
+                editorGetSelectionBounds(&sel_sx, &sel_sy, &sel_ex, &sel_ey);
+            }
 
 			for (int j = 0; j < len; j++) {
-				if (iscntrl(c[j])) {
+                int file_cx = editorRowRxToCx(&E.row[filerow], j + E.coloff);
+                int selected = 0;
+                if (visual_active) {
+                    if (
+                        (filerow > sel_sy && filerow < sel_ey) ||
+                        (filerow ==sel_sy && filerow == sel_ey &&
+                        file_cx >= sel_sx && file_cx < sel_ex) ||
+                        (filerow == sel_ey && filerow == sel_sy &&
+                        file_cx < sel_ex && file_cx >= sel_sx)
+                    ) {
+                        selected = 1;
+                    }
+                }
+
+				if (selected) {
+					abAppend(ab, "\x1b[7m", 4);
+					abAppend(ab, &c[j], 1);
+					abAppend(ab, "\x1b[m", 3);
+					current_color = -1;
+				}
+				else if (iscntrl(c[j])) {
 					char sym = (c[j] <= 26) ? '@' + c[j] : '?';
 					abAppend(ab, "\x1b[7m", 4);
 					abAppend(ab, &sym, 1);
@@ -91,13 +134,15 @@ static void editorDrawRows(struct abuf *ab) {
 							"\x1b[%dm", current_color);
 						abAppend(ab, buf, clen);
 					}
-				} else if (hl[j] == HL_NORMAL) {
+				}
+				else if (hl[j] == HL_NORMAL) {
 					if (current_color != -1) {
 						abAppend(ab, "\x1b[39m", 5);
 						current_color = -1;
 					}
 					abAppend(ab, &c[j], 1);
-				} else {
+				}
+				else {
 					int color = editorSyntaxToColor(hl[j]);
 					if (color != current_color) {
 						current_color = color;
@@ -108,6 +153,7 @@ static void editorDrawRows(struct abuf *ab) {
 					}
 					abAppend(ab, &c[j], 1);
 				}
+
 			}
 			abAppend(ab, "\x1b[39m", 5);
 		}

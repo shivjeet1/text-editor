@@ -21,6 +21,11 @@ void initEditor(void) {
 	E.statusmsg[0] = '\0';
 	E.statusmsg_time = 0;
 	E.syntax = NULL;
+    E.mode = MODE_NORMAL;
+    E.sel_sx = 0;
+    E.sel_sy = 0;
+    E.sel_ex = 0;
+    E.sel_ex = 0;
 
 	if (getWindowSize(&E.screenrows, &E.screencols) == -1)
 		die("getWindowSize");

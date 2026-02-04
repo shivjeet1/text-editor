@@ -35,6 +35,13 @@ enum editorHighlight {
 	HL_KEYWORD2
 };
 
+
+enum editorMode {
+	MODE_NORMAL,
+	MODE_INSERT,
+	MODE_VISUAL
+};
+
 #define HL_HIGHLIGHT_NUMBERS (1<<0)
 #define HL_HIGHLIGHT_STRINGS (1<<1)
 
@@ -73,6 +80,9 @@ struct editorConfig {
 	time_t statusmsg_time;
 	struct editorSyntax *syntax;
 	struct termios orig_termios;
+    enum editorMode mode;
+    int sel_sx, sel_sy;
+    int sel_ex, sel_ey;
 };
 
 extern struct editorConfig E;
