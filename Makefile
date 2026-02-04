@@ -2,39 +2,29 @@ NAME := jadu
 
 SRC_DIR := code/src
 INC_DIR := code/headers
-BUILD_DIR := build
 
 CC := gcc
-CFLAGS := -Wall -Wextra -std=c11 -I$(INC_DIR)
-LDFLAGS :=
+CFLAGS := -I$(INC_DIR) -Wall -Wextra -Werror 
 
 PREFIX ?= /usr/local
 BINDIR := $(PREFIX)/bin
 
-SRCS := $(wildcard $(SRC_DIR)/*.c)
-OBJS := $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+SRCS := $(SRC_DIR)/*.c
 
+all :
+	$(CC) $(SRCS) $(CFLAGS) -o $(NAME)
 
-all: $(NAME)
-
-$(NAME): $(OBJS)
-	$(CC) $(OBJS) -o $@ $(LDFLAGS)
-
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
-
-install: $(NAME)
+install : $(NAME)
+	mkdir -p $(BINDIR)
 	install -m 0755 $(NAME) $(BINDIR)/$(NAME)
 
-uninstall:
+uninstall :
 	rm -f $(BINDIR)/$(NAME)
 
-clean:
-	rm -rf $(BUILD_DIR) $(NAME)
+clean :
+	rm -f $(NAME)
 
-rebuild: clean all
+rebuild : clean all
+	
+.PHONY : all install uninstall clean rebuild
 
-.PHONY: all install uninstall clean rebuild
