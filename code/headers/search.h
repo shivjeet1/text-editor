@@ -1,11 +1,9 @@
-#ifndef RENDER_H
-#define RENDER_H
+#ifndef SEARCH_H
+#define SEARCH_H
 
 #include "editor.h"
 
-void editorRefreshScreen(void);
+void editorFind(void);
 
-void editorSetStatusMessage(const char *fmt, ...);
-
-#endif
+#endif 
 
